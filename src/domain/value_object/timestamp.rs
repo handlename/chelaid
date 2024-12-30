@@ -2,7 +2,7 @@ use color_eyre::eyre::{eyre, Result};
 
 use crate::domain::constant::TIMESTAMP_OFFSET;
 
-#[derive(Debug)]
+#[derive(Debug, PartialOrd, Ord)]
 pub struct Timestamp(u64);
 
 impl Timestamp {
@@ -12,6 +12,11 @@ impl Timestamp {
         }
 
         Ok(Self(v))
+    }
+
+    pub fn new_from_system_time(st: std::time::SystemTime) -> Result<Self> {
+        let secs = st.duration_since(std::time::UNIX_EPOCH).unwrap().as_secs();
+        Self::new(secs)
     }
 }
 
@@ -26,6 +31,8 @@ impl PartialEq for Timestamp {
         self.0 == other.0
     }
 }
+
+impl Eq for Timestamp {}
 
 impl Clone for Timestamp {
     fn clone(&self) -> Self {

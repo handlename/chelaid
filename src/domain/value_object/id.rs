@@ -9,7 +9,7 @@ use color_eyre::eyre::Result;
 // ID structure:
 // | timestamp | worker_id | sequence |
 // | 41bit     | 10bit     | 12bit    |
-#[derive(Debug)]
+#[derive(Debug, PartialOrd, Ord)]
 pub struct ID(u64);
 
 impl ID {
@@ -41,6 +41,14 @@ impl std::convert::From<ID> for u64 {
         id.0
     }
 }
+
+impl PartialEq for ID {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl Eq for ID {}
 
 impl Clone for ID {
     fn clone(&self) -> Self {
