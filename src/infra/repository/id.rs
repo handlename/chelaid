@@ -83,7 +83,7 @@ mod tests {
         let repo = super::ID::new(worker_id.clone()).unwrap();
 
         let num = 10000;
-        assert!(SEQUENCE_BITS < num);
+        assert!((1 << SEQUENCE_BITS) < num);
 
         // minimum ID
         let mut last_id = value_object::id::ID::new(
