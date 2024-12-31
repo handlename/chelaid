@@ -42,7 +42,7 @@ impl ID {
         // reset sequence if the timestamp is different
         // reset sequence if the sequence is overflowed
         let (next_ts, next_seq) = if next_ts == *last_ts {
-            match value_object::sequence::Sequence::new(u32::from((*last_seq).clone()) + 1) {
+            match last_seq.clone().next() {
                 Ok(seq) => (next_ts, seq),
                 Err(err) => match err {
                     domain::error::Error::SequenceTooLarge(_) => {

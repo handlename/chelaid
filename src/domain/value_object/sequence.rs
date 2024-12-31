@@ -13,6 +13,10 @@ impl Sequence {
 
         Ok(Sequence(v))
     }
+
+    pub fn next(&self) -> Result<Sequence, Error> {
+        Self::new(self.0 + 1)
+    }
 }
 
 impl std::convert::From<Sequence> for u32 {
