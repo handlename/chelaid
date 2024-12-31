@@ -1,4 +1,5 @@
-use color_eyre::eyre::{eyre, Result};
+use crate::domain::error::Error;
+use color_eyre::eyre::Result;
 
 use crate::domain::constant::TIMESTAMP_OFFSET;
 
@@ -7,15 +8,15 @@ use crate::domain::constant::TIMESTAMP_OFFSET;
 pub struct Timestamp(u64);
 
 impl Timestamp {
-    pub fn new(v: u64) -> Result<Self> {
+    pub fn new(v: u64) -> Result<Self, Error> {
         if v < TIMESTAMP_OFFSET {
-            return Err(eyre!("Timestamp is too small"));
+            return Err(Error::TimestampTooSmall(v));
         }
 
         Ok(Self(v))
     }
 
-    pub fn new_from_system_time(st: std::time::SystemTime) -> Result<Self> {
+    pub fn new_from_system_time(st: std::time::SystemTime) -> Result<Self, Error> {
         let mills = st
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
@@ -24,7 +25,7 @@ impl Timestamp {
         Self::new(mills as u64)
     }
 
-    pub fn now() -> Result<Self> {
+    pub fn now() -> Result<Self, Error> {
         Self::new_from_system_time(std::time::SystemTime::now())
     }
 }

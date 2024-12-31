@@ -1,5 +1,10 @@
-use crate::domain::{self, constant::TIMESTAMP_OFFSET, value_object};
-use color_eyre::eyre::Result;
+use super::super::error::Error;
+use crate::{
+    domain::{self, constant::TIMESTAMP_OFFSET, value_object},
+    infra::error,
+};
+
+use color_eyre::eyre::{Report, Result};
 
 pub struct ID {
     worker_id: value_object::worker_id::WorkerID,
@@ -24,10 +29,7 @@ impl ID {
         value_object::timestamp::Timestamp,
         value_object::sequence::Sequence,
     )> {
-        let mut last = self
-            .last
-            .lock()
-            .map_err(|e| color_eyre::eyre::eyre!("Failed to lock last mutex: {}", e))?;
+        let mut last = self.last.lock().unwrap();
 
         let last_ts = &mut last.0.clone();
         let last_seq = &mut last.1.clone();
@@ -35,7 +37,7 @@ impl ID {
         let next_ts =
             value_object::timestamp::Timestamp::new_from_system_time(std::time::SystemTime::now())?;
         if next_ts < *last_ts {
-            return Err(color_eyre::eyre::eyre!("system clock has been rollbacked"));
+            return Err(Error::SystemClockRewound).map_err(Report::from);
         }
 
         // forward sequence if the timestamp is the same
@@ -50,7 +52,7 @@ impl ID {
                         let new_seq = value_object::sequence::Sequence::new(0)?;
                         (new_ts, new_seq)
                     }
-                    _ => return Err(err.into()),
+                    _ => return Err(error::Error::DomainError(err)).map_err(Report::from),
                 },
             }
         } else {

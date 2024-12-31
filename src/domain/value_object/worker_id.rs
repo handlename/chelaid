@@ -1,14 +1,15 @@
-use color_eyre::eyre::{eyre, Result};
-
 use crate::domain::constant::WORKER_ID_BITS;
+use crate::domain::error::Error;
+
+use color_eyre::eyre::Result;
 
 #[derive(Debug)]
 pub struct WorkerID(u32);
 
 impl WorkerID {
-    pub fn new(v: u32) -> Result<WorkerID> {
+    pub fn new(v: u32) -> Result<WorkerID, Error> {
         if (1 << WORKER_ID_BITS) <= v {
-            return Err(eyre!("WorkerID is too large"));
+            return Err(Error::WorkerIDTooLarge(v));
         }
 
         Ok(WorkerID(v))
