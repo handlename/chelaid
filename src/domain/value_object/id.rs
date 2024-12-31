@@ -1,4 +1,4 @@
-use crate::domain::constant::TIMESTAMP_OFFSET;
+use super::super::constant::TIMESTAMP_OFFSET;
 
 use super::super::constant::{SEQUENCE_BITS, WORKER_ID_BITS};
 use super::sequence::Sequence;

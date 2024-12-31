@@ -1,5 +1,5 @@
-use crate::domain::constant::SEQUENCE_BITS;
-use crate::domain::error::Error;
+use super::super::constant::SEQUENCE_BITS;
+use super::super::error::Error;
 use color_eyre::eyre::Result;
 
 #[derive(Debug)]

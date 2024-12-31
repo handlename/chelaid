@@ -1,5 +1,5 @@
-use crate::domain::constant::WORKER_ID_BITS;
-use crate::domain::error::Error;
+use super::super::constant::WORKER_ID_BITS;
+use super::super::error::Error;
 
 use color_eyre::eyre::Result;
 

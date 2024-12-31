@@ -1,7 +1,7 @@
-use crate::domain::error::Error;
+use super::super::error::Error;
 use color_eyre::eyre::Result;
 
-use crate::domain::constant::TIMESTAMP_OFFSET;
+use super::super::constant::TIMESTAMP_OFFSET;
 
 /// Epoch time in millseconds.
 #[derive(Debug, PartialOrd, Ord)]
