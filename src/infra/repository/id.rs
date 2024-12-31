@@ -68,7 +68,7 @@ impl ID {
     fn wait_until_next_tick(
         &self,
         current_ts: value_object::timestamp::Timestamp,
-    ) -> Result<(value_object::timestamp::Timestamp)> {
+    ) -> Result<value_object::timestamp::Timestamp> {
         loop {
             let next_ts = value_object::timestamp::Timestamp::now()?;
 
