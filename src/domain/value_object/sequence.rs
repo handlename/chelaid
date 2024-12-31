@@ -1,14 +1,14 @@
-use color_eyre::eyre::{eyre, Result};
-
 use crate::domain::constant::SEQUENCE_BITS;
+use crate::domain::error::Error;
+use color_eyre::eyre::Result;
 
 #[derive(Debug)]
 pub struct Sequence(u32);
 
 impl Sequence {
-    pub fn new(v: u32) -> Result<Sequence> {
+    pub fn new(v: u32) -> Result<Sequence, Error> {
         if (1 << SEQUENCE_BITS) <= v {
-            return Err(eyre!("Sequence is too large"));
+            return Err(Error::SequenceTooLarge(v));
         }
 
         Ok(Sequence(v))

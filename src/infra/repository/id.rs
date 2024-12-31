@@ -1,4 +1,4 @@
-use crate::domain::{constant::TIMESTAMP_OFFSET, value_object};
+use crate::domain::{self, constant::TIMESTAMP_OFFSET, value_object};
 use color_eyre::eyre::Result;
 
 pub struct ID {
@@ -38,12 +38,46 @@ impl ID {
             return Err(color_eyre::eyre::eyre!("system clock has been rollbacked"));
         }
 
-        // TODO: Implement sequence overflow
-        let next_seq = value_object::sequence::Sequence::new(u32::from((*last_seq).clone()) + 1)?;
+        // forward sequence if the timestamp is the same
+        // reset sequence if the timestamp is different
+        // reset sequence if the sequence is overflowed
+        let (next_ts, next_seq) = if next_ts == *last_ts {
+            match value_object::sequence::Sequence::new(u32::from((*last_seq).clone()) + 1) {
+                Ok(seq) => (next_ts, seq),
+                Err(err) => match err {
+                    domain::error::Error::SequenceTooLarge(_) => {
+                        let new_ts = self.wait_until_next_tick(next_ts.clone())?;
+                        let new_seq = value_object::sequence::Sequence::new(0)?;
+                        (new_ts, new_seq)
+                    }
+                    _ => return Err(err.into()),
+                },
+            }
+        } else {
+            (next_ts, value_object::sequence::Sequence::new(0)?)
+        };
 
+        // update last state
         *last = (next_ts.clone(), next_seq.clone());
 
         Ok((next_ts, next_seq))
+    }
+
+    fn wait_until_next_tick(
+        &self,
+        current_ts: value_object::timestamp::Timestamp,
+    ) -> Result<(value_object::timestamp::Timestamp)> {
+        loop {
+            let next_ts = value_object::timestamp::Timestamp::new_from_system_time(
+                std::time::SystemTime::now(),
+            )?;
+
+            if current_ts < next_ts {
+                return Ok(next_ts);
+            }
+
+            std::thread::sleep(std::time::Duration::from_nanos(50));
+        }
     }
 }
 
@@ -77,7 +111,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // sequence overflow is not implemented yet
     fn test_next_some() {
         let worker_id = value_object::worker_id::WorkerID::new(123).unwrap();
         let repo = super::ID::new(worker_id.clone()).unwrap();
