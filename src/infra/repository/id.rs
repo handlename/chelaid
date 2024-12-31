@@ -68,9 +68,7 @@ impl ID {
         current_ts: value_object::timestamp::Timestamp,
     ) -> Result<(value_object::timestamp::Timestamp)> {
         loop {
-            let next_ts = value_object::timestamp::Timestamp::new_from_system_time(
-                std::time::SystemTime::now(),
-            )?;
+            let next_ts = value_object::timestamp::Timestamp::now()?;
 
             if current_ts < next_ts {
                 return Ok(next_ts);

@@ -23,6 +23,10 @@ impl Timestamp {
         // TODO: overflow check
         Self::new(mills as u64)
     }
+
+    pub fn now() -> Result<Self> {
+        Self::new_from_system_time(std::time::SystemTime::now())
+    }
 }
 
 impl std::convert::From<Timestamp> for u64 {
