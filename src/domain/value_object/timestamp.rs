@@ -2,6 +2,7 @@ use color_eyre::eyre::{eyre, Result};
 
 use crate::domain::constant::TIMESTAMP_OFFSET;
 
+/// Epoch time in millseconds.
 #[derive(Debug, PartialOrd, Ord)]
 pub struct Timestamp(u64);
 
@@ -15,8 +16,12 @@ impl Timestamp {
     }
 
     pub fn new_from_system_time(st: std::time::SystemTime) -> Result<Self> {
-        let secs = st.duration_since(std::time::UNIX_EPOCH).unwrap().as_secs();
-        Self::new(secs)
+        let mills = st
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
+        // TODO: overflow check
+        Self::new(mills as u64)
     }
 }
 
