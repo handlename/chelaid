@@ -18,6 +18,7 @@ app::
 
 infra::
   interface::
+    cli
     binary
     text
     http
