@@ -1,4 +1,6 @@
-# chelaid - ID generator server
+# chelaid - ID generator
+
+chelaid = chelate + id
 
 ## Development
 

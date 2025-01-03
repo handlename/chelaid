@@ -39,21 +39,21 @@ fn main() -> Result<()> {
 }
 
 fn run_cli_issue(args: Args) -> Result<()> {
-    let worker_id = domain::value_object::worker_id::WorkerID::new(args.worker_id)?;
-    let repository = infra::repository::id::ID::new(worker_id)?;
+    let worker_id = domain::value_object::WorkerID::new(args.worker_id)?;
+    let repository = infra::repository::ID::new(worker_id)?;
 
-    let id = infra::interface::cli::Cli::new(repository).issue()?;
+    let id = infra::interface::Cli::new(repository).issue()?;
     println!("{}", u64::from(id));
 
     Ok(())
 }
 
 fn run_cli_issue_some(args: Args) -> Result<()> {
-    let worker_id = domain::value_object::worker_id::WorkerID::new(args.worker_id)?;
-    let repository = infra::repository::id::ID::new(worker_id)?;
+    let worker_id = domain::value_object::WorkerID::new(args.worker_id)?;
+    let repository = infra::repository::ID::new(worker_id)?;
     let num = args.issues.unwrap();
 
-    let ids = infra::interface::cli::Cli::new(repository).issue_some(num)?;
+    let ids = infra::interface::Cli::new(repository).issue_some(num)?;
     for id in ids {
         println!("{}", u64::from(id));
     }

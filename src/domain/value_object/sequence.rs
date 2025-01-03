@@ -1,4 +1,4 @@
-use super::super::constant::SEQUENCE_BITS;
+use super::super::constant::*;
 use super::super::error::Error;
 use color_eyre::eyre::Result;
 
