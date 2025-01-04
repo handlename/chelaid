@@ -21,8 +21,9 @@ app::
 infra::
   interface::
     cli
-    binary
-    text
+    memcached_binary
+    memcached_text_meta
+    memcached_text_basic
     http
     grpc
   repository::
