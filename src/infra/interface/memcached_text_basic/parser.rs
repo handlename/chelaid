@@ -26,7 +26,12 @@ mod tests {
 
     #[test]
     fn test_parse_success() {
-        let tests = vec![("get key1", "GET key1"), ("get key1 key2", "GET key1 key2")];
+        let tests = vec![
+            ("get key1", "GET key1"),
+            ("get key1 key2", "GET key1 key2"),
+            ("GET key1", "GET key1"),
+            ("Get key1", "GET key1"),
+        ];
 
         for (line, expected) in tests {
             let got = Parser::parse(line).unwrap().to_string();
