@@ -1,0 +1,106 @@
+use std::io::{BufRead, Write};
+
+use color_eyre::eyre::Result;
+use log::{debug, error, info};
+
+use crate::domain;
+use crate::infra;
+
+struct Tcp<R>
+where
+    R: domain::repository::ID + Send + Sync + 'static,
+{
+    host: String,
+    port: u16,
+    memcached_text_parser: std::sync::Arc<infra::interface::memcached_text_basic::Parser<R>>,
+}
+
+impl<R> Tcp<R>
+where
+    R: domain::repository::ID + Send + Sync + 'static,
+{
+    pub fn new(host: String, port: u16, repository: R) -> Result<Self> {
+        Ok(Self {
+            host,
+            port,
+            memcached_text_parser: std::sync::Arc::new(
+                infra::interface::memcached_text_basic::Parser::new(std::sync::Arc::new(
+                    repository,
+                )),
+            ),
+        })
+    }
+
+    pub fn start(&self) -> Result<()> {
+        let server = std::net::TcpListener::bind(format!("{}:{}", self.host, self.port))?;
+        server.set_nonblocking(false).expect("out of service");
+        info!("start TCP server");
+
+        loop {
+            debug!("waiting connection");
+
+            match server.accept() {
+                Ok((stream, address)) => {
+                    match stream.try_clone() {
+                        Ok(mut s) => {
+                            debug!("accepted connection from {}", address);
+                            self.handle_connection(&mut s, address)?;
+                        }
+                        Err(e) => {
+                            error!("failed to clone stream from address {}: {}", address, e);
+                        }
+                    }
+                    self.handle_connection(&mut stream.try_clone().unwrap(), address)?;
+                }
+                Err(e) => {
+                    error!("failed to read: {}", e);
+                    break;
+                }
+            }
+        }
+
+        info!("server stopped");
+        Ok(())
+    }
+
+    fn handle_connection(
+        &self,
+        stream: &mut std::net::TcpStream,
+        address: std::net::SocketAddr,
+    ) -> Result<()> {
+        let mut reader = std::io::BufReader::new(stream.try_clone().unwrap());
+        let mut buf = String::new();
+
+        loop {
+            debug!("waiting message from {}", address);
+
+            match reader.read_line(&mut buf) {
+                Ok(0) => {
+                    info!("connection closed by {}", address);
+                    break;
+                }
+                Ok(_) => match self.memcached_text_parser.parse(&buf) {
+                    Ok(command) => {
+                        let res = command.execute()?;
+                        for r in res {
+                            debug!("response for {}: {}", address, r);
+
+                            stream.write(r.as_bytes())?;
+                            stream.write_all(b"\r\n")?;
+                        }
+                    }
+                    Err(e) => {
+                        error!("failed to parse '{}' from {}: {}", buf, address, e);
+                        break;
+                    }
+                },
+                Err(e) => {
+                    error!("failed to read from {}: {}", address, e);
+                    break;
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
