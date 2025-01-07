@@ -11,7 +11,7 @@ pub struct Get {
 }
 
 impl Get {
-    pub fn new<R>(repository: R, keys: Vec<String>) -> Result<Self>
+    pub fn new<R>(repository: std::sync::Arc<R>, keys: Vec<String>) -> Result<Self>
     where
         R: domain::repository::ID + 'static,
     {
@@ -72,7 +72,7 @@ mod tests {
 
     #[test]
     fn test_execute() {
-        let repo = MockRepository;
+        let repo = std::sync::Arc::new(MockRepository);
         let id = repo.next().unwrap();
 
         let tests = vec![

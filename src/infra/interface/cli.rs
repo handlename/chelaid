@@ -14,7 +14,7 @@ impl Cli {
         R: domain::repository::ID + 'static,
     {
         Self {
-            usecase: app::usecase::generate::Generate::new(repository),
+            usecase: app::usecase::generate::Generate::new(std::sync::Arc::new(repository)),
         }
     }
 

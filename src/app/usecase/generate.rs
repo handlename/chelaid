@@ -2,11 +2,11 @@ use crate::domain::{self, value_object};
 use color_eyre::eyre::Result;
 
 pub struct Generate {
-    repository: Box<dyn domain::repository::ID>,
+    repository: Box<std::sync::Arc<dyn domain::repository::ID>>,
 }
 
 impl Generate {
-    pub fn new<T>(repository: T) -> Generate
+    pub fn new<T>(repository: std::sync::Arc<T>) -> Generate
     where
         T: domain::repository::ID + 'static,
     {

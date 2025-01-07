@@ -7,16 +7,16 @@ use color_eyre::eyre::{Report, Result};
 
 pub struct Parser<R>
 where
-    R: domain::repository::ID,
+    R: domain::repository::ID + Send + Sync + 'static,
 {
-    repository: R,
+    repository: std::sync::Arc<R>,
 }
 
 impl<R> Parser<R>
 where
-    R: domain::repository::ID + Clone + Copy + 'static,
+    R: domain::repository::ID + Send + Sync + 'static,
 {
-    pub fn new(repository: R) -> Self {
+    pub fn new(repository: std::sync::Arc<R>) -> Self {
         Self { repository }
     }
 
@@ -59,7 +59,7 @@ mod tests {
             ("Get key1", "GET key1"),
         ];
 
-        let repo = MockRepository;
+        let repo = std::sync::Arc::new(MockRepository);
         let parser = Parser::new(repo);
 
         for (line, expected) in tests {
@@ -76,7 +76,7 @@ mod tests {
         ];
 
         let repo = MockRepository;
-        let parser = Parser::new(repo);
+        let parser = Parser::new(std::sync::Arc::new(repo));
 
         for (line, expected) in tests {
             match parser.parse(line) {
