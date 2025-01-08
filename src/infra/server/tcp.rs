@@ -93,6 +93,7 @@ where
 
                             stream.write(r.as_bytes())?;
                             stream.write_all(b"\r\n")?;
+                            buf.clear();
                         }
                     }
                     Err(e) => {
