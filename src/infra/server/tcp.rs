@@ -12,6 +12,7 @@ where
 {
     host: String,
     port: u16,
+    should_run: std::sync::Arc<std::sync::atomic::AtomicBool>,
     memcached_text_parser: std::sync::Arc<infra::interface::memcached_text_basic::Parser<R>>,
 }
 
@@ -23,6 +24,7 @@ where
         Ok(Self {
             host,
             port,
+            should_run: std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true)),
             memcached_text_parser: std::sync::Arc::new(
                 infra::interface::memcached_text_basic::Parser::new(std::sync::Arc::new(
                     repository,
@@ -36,7 +38,7 @@ where
         server.set_nonblocking(false).expect("out of service");
         info!("start TCP server");
 
-        loop {
+        while self.should_run.load(std::sync::atomic::Ordering::SeqCst) {
             debug!("waiting connection");
 
             match server.accept() {
@@ -61,6 +63,11 @@ where
 
         info!("server stopped");
         Ok(())
+    }
+
+    pub fn stop(&self) {
+        self.should_run
+            .store(false, std::sync::atomic::Ordering::SeqCst);
     }
 
     fn handle_connection(
