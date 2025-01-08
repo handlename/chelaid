@@ -1,5 +1,6 @@
 use clap::Parser;
 use color_eyre::eyre::Result;
+use log;
 
 mod app;
 mod domain;
@@ -19,9 +20,18 @@ struct Args {
     /// Number of IDs to issue
     #[arg(long)]
     issues: Option<usize>,
+
+    /// Host name for TCP server
+    #[arg(long, default_value = "127.0.0.1")]
+    host: String,
+
+    /// Port number for TCP server
+    #[arg(long, default_value_t = 11212)]
+    port: u16,
 }
 
 fn main() -> Result<()> {
+    env_logger::init();
     color_eyre::install()?;
 
     let args = Args::parse();
@@ -35,10 +45,14 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
+    run_tcp_server(args)?;
+
     Ok(())
 }
 
 fn run_cli_issue(args: Args) -> Result<()> {
+    log::debug!("start to issue a id...");
+
     let worker_id = domain::value_object::WorkerID::new(args.worker_id)?;
     let repository = infra::repository::ID::new(worker_id)?;
 
@@ -49,6 +63,8 @@ fn run_cli_issue(args: Args) -> Result<()> {
 }
 
 fn run_cli_issue_some(args: Args) -> Result<()> {
+    log::debug!("start to issue some ids...");
+
     let worker_id = domain::value_object::WorkerID::new(args.worker_id)?;
     let repository = infra::repository::ID::new(worker_id)?;
     let num = args.issues.unwrap();
@@ -56,6 +72,28 @@ fn run_cli_issue_some(args: Args) -> Result<()> {
     let ids = infra::interface::Cli::new(repository).issue_some(num)?;
     for id in ids {
         println!("{}", u64::from(id));
+    }
+
+    Ok(())
+}
+
+fn run_tcp_server(args: Args) -> Result<()> {
+    log::debug!("start to run TCP server...");
+
+    let worker_id = domain::value_object::WorkerID::new(args.worker_id)?;
+    let repository = infra::repository::ID::new(worker_id)?;
+
+    let server = infra::server::tcp::Tcp::new(args.host, args.port, repository)?;
+    let should_run = server.get_should_run();
+
+    ctrlc::set_handler(move || {
+        log::info!("received Ctrl+C, shutting down...");
+        should_run.store(false, std::sync::atomic::Ordering::SeqCst);
+    })
+    .expect("error on setting Ctrl+C handler");
+
+    if let Err(e) = server.start() {
+        log::error!("failed to start server: {}", e);
     }
 
     Ok(())

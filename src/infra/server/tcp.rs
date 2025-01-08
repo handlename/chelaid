@@ -6,7 +6,7 @@ use log::{debug, error, info};
 use crate::domain;
 use crate::infra;
 
-struct Tcp<R>
+pub struct Tcp<R>
 where
     R: domain::repository::ID + Send + Sync + 'static,
 {
@@ -65,9 +65,8 @@ where
         Ok(())
     }
 
-    pub fn stop(&self) {
-        self.should_run
-            .store(false, std::sync::atomic::Ordering::SeqCst);
+    pub fn get_should_run(&self) -> std::sync::Arc<std::sync::atomic::AtomicBool> {
+        self.should_run.clone()
     }
 
     fn handle_connection(
