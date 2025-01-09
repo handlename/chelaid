@@ -1,7 +1,7 @@
 use std::io::{BufRead, Write};
 
 use color_eyre::eyre::Result;
-use log::{debug, error, info};
+use log;
 
 use crate::domain;
 use crate::infra;
@@ -36,29 +36,29 @@ where
     pub fn start(&self) -> Result<()> {
         let server = std::net::TcpListener::bind(format!("{}:{}", self.host, self.port))?;
         server.set_nonblocking(false).expect("out of service");
-        info!("start TCP server");
+        log::info!("start TCP server");
 
         while self.should_run.load(std::sync::atomic::Ordering::SeqCst) {
-            debug!("waiting connection");
+            log::debug!("waiting connection");
 
             match server.accept() {
                 Ok((stream, address)) => match stream.try_clone() {
                     Ok(mut s) => {
-                        debug!("accepted connection from {}", address);
+                        log::debug!("accepted connection from {}", address);
                         self.handle_connection(&mut s)?;
                     }
                     Err(e) => {
-                        error!("failed to clone stream from address {}: {}", address, e);
+                        log::error!("failed to clone stream from address {}: {}", address, e);
                     }
                 },
                 Err(e) => {
-                    error!("failed to read: {}", e);
+                    log::error!("failed to read: {}", e);
                     break;
                 }
             }
         }
 
-        info!("server stopped");
+        log::info!("server stopped");
         Ok(())
     }
 
@@ -71,14 +71,14 @@ where
         let mut reader = std::io::BufReader::new(stream.try_clone().unwrap());
         let mut buf = String::new();
 
-        debug!("start waiting message loop from {}", address);
+        log::debug!("start waiting message loop from {}", address);
 
         loop {
-            debug!("waiting message from {}", address);
+            log::debug!("waiting message from {}", address);
 
             match reader.read_line(&mut buf) {
                 Ok(0) => {
-                    info!("connection closed by {}", address);
+                    log::info!("connection closed by {}", address);
                     break;
                 }
                 Ok(_) => match self.memcached_text_parser.parse(&buf) {
@@ -86,25 +86,26 @@ where
                         if command.command_name()
                             == infra::interface::memcached_text_basic::CommandName::End
                         {
-                            debug!("END command from {}", address);
+                            log::debug!("END command from {}", address);
                             return Ok(());
                         }
 
                         let res = command.execute()?;
                         for r in res {
-                            debug!("response for {}: {}", address, r);
+                            log::debug!("response for {}: {}", address, r);
 
                             stream.write(r.as_bytes())?;
                             stream.write_all(b"\r\n")?;
                         }
                     }
                     Err(e) => {
-                        error!("failed to parse '{}' from {}: {}", buf, address, e);
+                        log::error!("failed to parse '{}' from {}: {}", buf, address, e);
+                        // TODO: returns log::! to client
                         break;
                     }
                 },
                 Err(e) => {
-                    error!("failed to read from {}: {}", address, e);
+                    log::debug!("failed to read from {}: {}", address, e);
                     break;
                 }
             }
