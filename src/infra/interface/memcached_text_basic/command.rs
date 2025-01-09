@@ -1,6 +1,8 @@
+mod end;
 mod get;
 
 use color_eyre::eyre::Result;
+pub use end::End;
 pub use get::Get;
 
 pub trait Command {
