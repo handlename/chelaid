@@ -71,6 +71,8 @@ where
         let mut reader = std::io::BufReader::new(stream.try_clone().unwrap());
         let mut buf = String::new();
 
+        debug!("start waiting message loop from {}", address);
+
         loop {
             debug!("waiting message from {}", address);
 
