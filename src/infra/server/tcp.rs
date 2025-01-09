@@ -84,6 +84,13 @@ where
                 }
                 Ok(_) => match self.memcached_text_parser.parse(&buf) {
                     Ok(command) => {
+                        if command.command_name()
+                            == infra::interface::memcached_text_basic::CommandName::End
+                        {
+                            debug!("END command from {}", address);
+                            return Ok(());
+                        }
+
                         let res = command.execute()?;
                         for r in res {
                             debug!("response for {}: {}", address, r);

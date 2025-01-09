@@ -5,7 +5,7 @@ use super::{super::command_name::CommandName, Command};
 use crate::{app, domain};
 
 pub struct Get {
-    command: CommandName,
+    command_name: CommandName,
     keys: Vec<String>,
     usecase: app::usecase::generate::Generate,
 }
@@ -24,7 +24,7 @@ impl Get {
         }
 
         Ok(Self {
-            command: CommandName::Get,
+            command_name: CommandName::Get,
             keys,
             usecase: app::usecase::generate::Generate::new(repository),
         })
@@ -42,10 +42,14 @@ impl Command for Get {
         Ok(results)
     }
 
+    fn command_name(&self) -> CommandName {
+        self.command_name.clone()
+    }
+
     fn to_string(&self) -> String {
         format!(
             "{} {}",
-            String::from(self.command.clone()),
+            String::from(self.command_name.clone()),
             self.keys.join(" ")
         )
     }
