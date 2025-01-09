@@ -52,7 +52,6 @@ where
                             error!("failed to clone stream from address {}: {}", address, e);
                         }
                     }
-                    self.handle_connection(&mut stream.try_clone().unwrap(), address)?;
                 }
                 Err(e) => {
                     error!("failed to read: {}", e);
