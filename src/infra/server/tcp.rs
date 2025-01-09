@@ -45,7 +45,7 @@ where
                 Ok((stream, address)) => match stream.try_clone() {
                     Ok(mut s) => {
                         debug!("accepted connection from {}", address);
-                        self.handle_connection(&mut s, address)?;
+                        self.handle_connection(&mut s)?;
                     }
                     Err(e) => {
                         error!("failed to clone stream from address {}: {}", address, e);
@@ -66,11 +66,8 @@ where
         self.should_run.clone()
     }
 
-    fn handle_connection(
-        &self,
-        stream: &mut std::net::TcpStream,
-        address: std::net::SocketAddr,
-    ) -> Result<()> {
+    fn handle_connection(&self, stream: &mut std::net::TcpStream) -> Result<()> {
+        let address = stream.peer_addr()?;
         let mut reader = std::io::BufReader::new(stream.try_clone().unwrap());
         let mut buf = String::new();
 
