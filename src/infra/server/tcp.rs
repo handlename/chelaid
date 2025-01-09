@@ -42,17 +42,15 @@ where
             debug!("waiting connection");
 
             match server.accept() {
-                Ok((stream, address)) => {
-                    match stream.try_clone() {
-                        Ok(mut s) => {
-                            debug!("accepted connection from {}", address);
-                            self.handle_connection(&mut s, address)?;
-                        }
-                        Err(e) => {
-                            error!("failed to clone stream from address {}: {}", address, e);
-                        }
+                Ok((stream, address)) => match stream.try_clone() {
+                    Ok(mut s) => {
+                        debug!("accepted connection from {}", address);
+                        self.handle_connection(&mut s, address)?;
                     }
-                }
+                    Err(e) => {
+                        error!("failed to clone stream from address {}: {}", address, e);
+                    }
+                },
                 Err(e) => {
                     error!("failed to read: {}", e);
                     break;
