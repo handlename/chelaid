@@ -26,7 +26,6 @@ where
     port: u16,
     should_run: std::sync::Arc<std::sync::atomic::AtomicBool>,
     memcached_text_parser: std::sync::Arc<infra::interface::memcached_text_basic::Parser<R>>,
-    // connections: std::sync::Arc<std::sync::Mutex<Vec<std::net::TcpStream>>>,
     pool: Pool,
 }
 
@@ -44,7 +43,6 @@ where
                     repository,
                 )),
             ),
-            // connections: std::sync::Arc::new(std::sync::Mutex::new(Vec::new())),
             pool: Pool::new(4)?, // TODO: make it configurable
         })
     }
@@ -59,34 +57,9 @@ where
 
             match server.accept() {
                 Ok((stream, address)) => {
-                    // let stream = match stream.try_clone() {
-                    //     Ok(s) => s,
-                    //     Err(e) => {
-                    //         log::error!("failed to clone stream from address {}: {}", address, e);
-                    //         continue;
-                    //     }
-                    // };
-
                     log::debug!("accepted connection from {}", address);
 
-                    // // store connection
-                    // let connections = std::sync::Arc::clone(&self.connections);
-                    // match stream.try_clone() {
-                    //     Ok(s) => {
-                    //         let mut connections = connections.lock().unwrap();
-                    //         connections.push(s);
-                    //     }
-                    //     Err(e) => {
-                    //         log::error!("failed to clone stream from address {}: {}", address, e);
-                    //         break;
-                    //     }
-                    // }
-
                     let parser = std::sync::Arc::clone(&self.memcached_text_parser);
-                    // std::thread::spawn(move || match handle_connection(stream, parser) {
-                    //     Ok(_) => log::debug!("connection closed for {}", address),
-                    //     Err(e) => log::error!("failed to handle connection for {}: {}", address, e),
-                    // });
                     self.pool
                         .execute(move || match handle_connection(stream, parser) {
                             Ok(_) => log::debug!("connection closed for {}", address),
