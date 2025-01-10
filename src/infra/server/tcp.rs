@@ -1,3 +1,15 @@
+mod error;
+mod job;
+mod message;
+mod pool;
+mod worker;
+
+pub(crate) use error::*;
+pub(crate) use job::*;
+pub(crate) use message::*;
+pub(crate) use pool::*;
+pub(crate) use worker::*;
+
 use std::io::{BufRead, Write};
 
 use color_eyre::eyre::Result;
@@ -14,7 +26,8 @@ where
     port: u16,
     should_run: std::sync::Arc<std::sync::atomic::AtomicBool>,
     memcached_text_parser: std::sync::Arc<infra::interface::memcached_text_basic::Parser<R>>,
-    connections: std::sync::Arc<std::sync::Mutex<Vec<std::net::TcpStream>>>,
+    // connections: std::sync::Arc<std::sync::Mutex<Vec<std::net::TcpStream>>>,
+    pool: Pool,
 }
 
 impl<R> Tcp<R>
@@ -31,13 +44,14 @@ where
                     repository,
                 )),
             ),
-            connections: std::sync::Arc::new(std::sync::Mutex::new(Vec::new())),
+            // connections: std::sync::Arc::new(std::sync::Mutex::new(Vec::new())),
+            pool: Pool::new(4)?, // TODO: make it configurable
         })
     }
 
     pub fn start(&self) -> Result<()> {
         let server = std::net::TcpListener::bind(format!("{}:{}", self.host, self.port))?;
-        server.set_nonblocking(false).expect("out of service");
+        // server.set_nonblocking(false).expect("out of service");
         log::info!("start TCP server");
 
         while self.should_run.load(std::sync::atomic::Ordering::SeqCst) {
@@ -45,34 +59,41 @@ where
 
             match server.accept() {
                 Ok((stream, address)) => {
-                    let stream = match stream.try_clone() {
-                        Ok(s) => s,
-                        Err(e) => {
-                            log::error!("failed to clone stream from address {}: {}", address, e);
-                            continue;
-                        }
-                    };
+                    // let stream = match stream.try_clone() {
+                    //     Ok(s) => s,
+                    //     Err(e) => {
+                    //         log::error!("failed to clone stream from address {}: {}", address, e);
+                    //         continue;
+                    //     }
+                    // };
 
                     log::debug!("accepted connection from {}", address);
 
-                    // store connection
-                    let connections = std::sync::Arc::clone(&self.connections);
-                    match stream.try_clone() {
-                        Ok(s) => {
-                            let mut connections = connections.lock().unwrap();
-                            connections.push(s);
-                        }
-                        Err(e) => {
-                            log::error!("failed to clone stream from address {}: {}", address, e);
-                            break;
-                        }
-                    }
+                    // // store connection
+                    // let connections = std::sync::Arc::clone(&self.connections);
+                    // match stream.try_clone() {
+                    //     Ok(s) => {
+                    //         let mut connections = connections.lock().unwrap();
+                    //         connections.push(s);
+                    //     }
+                    //     Err(e) => {
+                    //         log::error!("failed to clone stream from address {}: {}", address, e);
+                    //         break;
+                    //     }
+                    // }
 
                     let parser = std::sync::Arc::clone(&self.memcached_text_parser);
-                    std::thread::spawn(move || match handle_connection(stream, parser) {
-                        Ok(_) => log::debug!("connection closed for {}", address),
-                        Err(e) => log::error!("failed to handle connection for {}: {}", address, e),
-                    });
+                    // std::thread::spawn(move || match handle_connection(stream, parser) {
+                    //     Ok(_) => log::debug!("connection closed for {}", address),
+                    //     Err(e) => log::error!("failed to handle connection for {}: {}", address, e),
+                    // });
+                    self.pool
+                        .execute(move || match handle_connection(stream, parser) {
+                            Ok(_) => log::debug!("connection closed for {}", address),
+                            Err(e) => {
+                                log::error!("failed to handle connection for {}: {}", address, e)
+                            }
+                        });
                 }
                 Err(e) => {
                     log::error!("failed to read: {}", e);
@@ -124,8 +145,9 @@ where
                     for r in res {
                         log::debug!("response for {}: {}", address, r);
 
-                        stream.write(r.as_bytes())?;
+                        stream.write_all(r.as_bytes())?;
                         stream.write_all(b"\r\n")?;
+                        stream.flush()?;
                     }
                 }
                 Err(e) => {
