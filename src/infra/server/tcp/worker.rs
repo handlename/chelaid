@@ -22,7 +22,10 @@ impl Worker {
                     log::debug!("worker {} got a job", id);
                     job.call_box();
                 }
-                Message::Shutdown => todo!(),
+                Message::Shutdown => {
+                    log::debug!("worker {} got a shutdown message", id);
+                    break;
+                }
             }
         });
 

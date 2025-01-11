@@ -36,3 +36,18 @@ impl Pool {
         log::debug!("sent a job");
     }
 }
+
+impl Drop for Pool {
+    fn drop(&mut self) {
+        for _ in &self.workers {
+            self.sender.send(Message::Shutdown).unwrap();
+        }
+
+        for worker in &mut self.workers {
+            log::debug!("shutting down worker: {}", worker.id);
+            if let Some(handle) = worker.thread.take() {
+                handle.join().unwrap();
+            }
+        }
+    }
+}
