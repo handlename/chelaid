@@ -107,9 +107,10 @@ where
             }
             Ok(_) => match parser.parse(&buf) {
                 Ok(command) => {
-                    if command.command_name()
-                        == infra::interface::memcached_text_basic::CommandName::End
-                    {
+                    if let Some(_) = command
+                        .as_any()
+                        .downcast_ref::<infra::interface::memcached_text_basic::command::End>(
+                    ) {
                         log::debug!("END command from {}", address);
                         break;
                     }

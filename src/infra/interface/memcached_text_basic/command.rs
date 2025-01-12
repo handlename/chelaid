@@ -5,7 +5,7 @@ use color_eyre::eyre::Result;
 pub use end::End;
 pub use get::Get;
 
-pub trait Command {
+pub trait Command: std::any::Any {
     /// Execute the command and return the result.
     /// The result is a vector of strings.
     /// Each string represents a line of the response.
@@ -17,4 +17,6 @@ pub trait Command {
     /// Convert the command to a string.
     /// format: "<command> <arg1> <arg2> ..."
     fn to_string(&self) -> String;
+
+    fn as_any(&self) -> &dyn std::any::Any;
 }

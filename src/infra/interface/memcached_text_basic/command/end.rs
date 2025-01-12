@@ -29,4 +29,8 @@ impl Command for End {
     fn to_string(&self) -> String {
         String::from(self.command_name.clone())
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
