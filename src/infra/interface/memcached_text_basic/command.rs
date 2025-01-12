@@ -11,12 +11,5 @@ pub trait Command: std::any::Any {
     /// Each string represents a line of the response.
     fn execute(&self) -> Result<Vec<String>>;
 
-    /// Return the command name.
-    fn command_name(&self) -> super::command_name::CommandName;
-
-    /// Convert the command to a string.
-    /// format: "<command> <arg1> <arg2> ..."
-    fn to_string(&self) -> String;
-
     fn as_any(&self) -> &dyn std::any::Any;
 }
