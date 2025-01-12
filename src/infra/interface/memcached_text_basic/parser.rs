@@ -53,21 +53,25 @@ mod tests {
 
     #[test]
     fn test_parse_success() {
-        let tests = vec![
-            ("get key1", "GET key1"),
-            ("get key1 key2", "GET key1 key2"),
-            ("GET key1", "GET key1"),
-            ("Get key1", "GET key1"),
-        ];
+            let tests = vec![
+                ("get key1", vec!["key1"]),
+                ("get key1 key2", vec!["key1", "key2"]),
+                ("GET key1", vec!["key1"]),
+                ("Get key1", vec!["key1"]),
+            ];
 
-        let repo = std::sync::Arc::new(MockRepository);
-        let parser = Parser::new(repo);
+            let repo = std::sync::Arc::new(MockRepository);
+            let parser = Parser::new(repo);
 
-        for (line, expected) in tests {
-            let got = parser.parse(line).unwrap().to_string();
-            assert_eq!(got, expected);
+            for (line, expected) in tests {
+                let res = parser.parse(line).expect("unexpected parse error");
+                if let Some(command) = res.as_any().downcast_ref::<command::Get>() {
+                    assert_eq!(command.keys, expected.iter().map(|s| s.to_string()).collect::<Vec<_>>());
+                } else {
+                    panic!("unexpected command type");
+                }
+            }
         }
-    }
 
     #[test]
     fn test_parse_error() {
