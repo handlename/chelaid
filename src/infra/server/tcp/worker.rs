@@ -11,6 +11,8 @@ impl Worker {
         rx: std::sync::Arc<std::sync::Mutex<std::sync::mpsc::Receiver<Message>>>,
     ) -> Self {
         let thread = std::thread::spawn(move || loop {
+            log::debug!("worker {} started", id);
+
             let message = {
                 let rx = rx.lock().unwrap();
                 log::debug!("worker {} waiting message", id);

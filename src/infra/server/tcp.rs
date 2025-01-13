@@ -18,15 +18,27 @@ use log;
 use crate::domain;
 use crate::infra;
 
+pub struct ShutdownInfo {
+    flag: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    addr: std::net::SocketAddr,
+}
+
+impl Clone for ShutdownInfo {
+    fn clone(&self) -> Self {
+        ShutdownInfo {
+            flag: std::sync::Arc::clone(&self.flag),
+            addr: self.addr,
+        }
+    }
+}
+
 pub struct Tcp<R>
 where
     R: domain::repository::ID + Send + Sync + 'static,
 {
     host: String,
     port: u16,
-    should_run: std::sync::Arc<std::sync::atomic::AtomicBool>,
-    memcached_text_parser: std::sync::Arc<infra::interface::memcached_text_basic::Parser<R>>,
-    pool: Pool,
+    repository: Option<R>,
 }
 
 impl<R> Tcp<R>
@@ -37,50 +49,54 @@ where
         Ok(Self {
             host,
             port,
-            should_run: std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true)),
-            memcached_text_parser: std::sync::Arc::new(
-                infra::interface::memcached_text_basic::Parser::new(std::sync::Arc::new(
-                    repository,
-                )),
-            ),
-            pool: Pool::new(4)?, // TODO: make it configurable
+            repository: Some(repository),
         })
     }
 
-    pub fn start(&self) -> Result<()> {
+    pub fn start(&mut self) -> Result<(std::thread::JoinHandle<()>, ShutdownInfo)> {
         let server = std::net::TcpListener::bind(format!("{}:{}", self.host, self.port))?;
-        // server.set_nonblocking(false).expect("out of service");
+        let local_addr = server.local_addr()?;
         log::info!("start TCP server");
 
-        while self.should_run.load(std::sync::atomic::Ordering::SeqCst) {
-            log::debug!("waiting connection");
+        let parser = std::sync::Arc::new(infra::interface::memcached_text_basic::Parser::new(
+            std::sync::Arc::new(self.repository.take().unwrap()),
+        ));
+        let pool = Pool::new(4)?; // TODO: make pool size configurable
+        let should_run = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true));
 
-            match server.accept() {
-                Ok((stream, address)) => {
-                    log::debug!("accepted connection from {}", address);
+        let shutdown_info = ShutdownInfo {
+            flag: should_run.clone(),
+            addr: local_addr,
+        };
 
-                    let parser = std::sync::Arc::clone(&self.memcached_text_parser);
-                    self.pool
-                        .execute(move || match handle_connection(stream, parser) {
+        let handle = std::thread::spawn(move || {
+            for connection in server.incoming() {
+                if !should_run.load(std::sync::atomic::Ordering::SeqCst) {
+                    return;
+                }
+
+                match connection {
+                    Ok(stream) => {
+                        let address = stream.peer_addr().unwrap();
+                        log::debug!("accepted connection from {}", address);
+
+                        let parser = std::sync::Arc::clone(&parser);
+                        pool.execute(move || match handle_connection(stream, parser) {
                             Ok(_) => log::debug!("connection closed for {}", address),
                             Err(e) => {
                                 log::error!("failed to handle connection for {}: {}", address, e)
                             }
                         });
-                }
-                Err(e) => {
-                    log::error!("failed to read: {}", e);
-                    break;
+                    }
+                    Err(e) => {
+                        log::error!("failed to read: {}", e);
+                        break;
+                    }
                 }
             }
-        }
+        });
 
-        log::info!("server stopped");
-        Ok(())
-    }
-
-    pub fn get_should_run(&self) -> std::sync::Arc<std::sync::atomic::AtomicBool> {
-        self.should_run.clone()
+        Ok((handle, shutdown_info))
     }
 }
 
@@ -140,6 +156,15 @@ where
     }
 
     stream.shutdown(std::net::Shutdown::Both)?;
+
+    Ok(())
+}
+
+pub fn shutdown(info: ShutdownInfo) -> Result<()> {
+    info.flag.store(false, std::sync::atomic::Ordering::SeqCst);
+
+    // for unlock blocking by incoming()
+    std::net::TcpStream::connect(info.addr)?;
 
     Ok(())
 }

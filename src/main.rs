@@ -83,18 +83,20 @@ fn run_tcp_server(args: Args) -> Result<()> {
     let worker_id = domain::value_object::WorkerID::new(args.worker_id)?;
     let repository = infra::repository::ID::new(worker_id)?;
 
-    let server = infra::server::tcp::Tcp::new(args.host, args.port, repository)?;
-    let should_run = server.get_should_run();
+    let mut server = infra::server::tcp::Tcp::new(args.host, args.port, repository)?;
+
+    let (handle, shutdown_info) = server.start()?;
 
     ctrlc::set_handler(move || {
         log::info!("received Ctrl+C, shutting down...");
-        should_run.store(false, std::sync::atomic::Ordering::SeqCst);
+        match  infra::server::tcp::shutdown(shutdown_info.clone()) {
+            Ok(_) => log::info!("server shutdown successfully"),
+            Err(e) => log::error!("failed to shutdown server: {}", e),
+        }
     })
     .expect("error on setting Ctrl+C handler");
 
-    if let Err(e) = server.start() {
-        log::error!("failed to start server: {}", e);
-    }
+    handle.join().expect("failed to join server thread");
 
     Ok(())
 }
