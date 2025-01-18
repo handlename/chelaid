@@ -116,6 +116,15 @@ where
     loop {
         log::debug!("waiting message from {}", address);
 
+        // TODO: make timeout configurable
+        match stream.set_read_timeout(Some(std::time::Duration::from_secs(5))) {
+            Ok(_) => {}
+            Err(_) => {
+                log::error!("failed to set timeout for {}", address);
+                break;
+            }
+        }
+
         match reader.read_line(&mut buf) {
             Ok(0) => {
                 log::info!("connection closed by {}", address);
