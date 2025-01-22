@@ -5,6 +5,7 @@ use log;
 mod app;
 mod domain;
 mod infra;
+mod logger;
 
 #[derive(clap::Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -31,7 +32,7 @@ struct Args {
 }
 
 fn main() -> Result<()> {
-    env_logger::init();
+    logger::init();
     color_eyre::install()?;
 
     let args = Args::parse();
