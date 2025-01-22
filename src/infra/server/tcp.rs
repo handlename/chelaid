@@ -130,33 +130,35 @@ where
                 log::info!("connection closed by {}", address);
                 break;
             }
-            Ok(_) => match parser.parse(&buf) {
-                Ok(command) => {
-                    if let Some(_) = command
-                        .as_any()
-                        .downcast_ref::<infra::interface::memcached_text_basic::command::End>(
-                    ) {
-                        log::debug!("END command from {}", address);
-                        break;
-                    }
-
-                    let res = command.execute()?;
-                    for r in res {
-                        log::debug!("response for {}: {}", address, r);
-
-                        stream.write_all(r.as_bytes())?;
-                        stream.write_all(b"\r\n")?;
-                        stream.flush()?;
-                    }
-                }
-                Err(e) => {
-                    log::error!("failed to parse '{}' from {}: {}", buf, address, e);
-                    // TODO: returns log::! to client
-                    break;
-                }
-            },
+            Ok(_) => {}
             Err(e) => {
                 log::debug!("failed to read from {}: {}", address, e);
+                break;
+            }
+        }
+
+        match parser.parse(&buf) {
+            Ok(command) => {
+                if let Some(_) = command
+                    .as_any()
+                    .downcast_ref::<infra::interface::memcached_text_basic::command::End>(
+                ) {
+                    log::debug!("END command from {}", address);
+                    break;
+                }
+
+                let res = command.execute()?;
+                for r in res {
+                    log::debug!("response for {}: {}", address, r);
+
+                    stream.write_all(r.as_bytes())?;
+                    stream.write_all(b"\r\n")?;
+                    stream.flush()?;
+                }
+            }
+            Err(e) => {
+                log::error!("failed to parse '{}' from {}: {}", buf, address, e);
+                // TODO: returns log::! to client
                 break;
             }
         }
