@@ -90,7 +90,7 @@ fn run_tcp_server(args: Args) -> Result<()> {
 
     ctrlc::set_handler(move || {
         log::info!("received Ctrl+C, shutting down...");
-        match  infra::server::tcp::shutdown(shutdown_info.clone()) {
+        match infra::server::tcp::shutdown(shutdown_info.clone()) {
             Ok(_) => log::info!("server shutdown successfully"),
             Err(e) => log::error!("failed to shutdown server: {}", e),
         }
