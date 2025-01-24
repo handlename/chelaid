@@ -34,7 +34,7 @@ impl Clone for ShutdownInfo {
 
 pub struct Tcp<R>
 where
-    R: domain::repository::ID + Send + Sync + 'static,
+    R: domain::repository::Id + Send + Sync + 'static,
 {
     host: String,
     port: u16,
@@ -43,7 +43,7 @@ where
 
 impl<R> Tcp<R>
 where
-    R: domain::repository::ID + Send + Sync + 'static,
+    R: domain::repository::Id + Send + Sync + 'static,
 {
     pub fn new(host: String, port: u16, repository: R) -> Result<Self> {
         Ok(Self {
@@ -105,7 +105,7 @@ fn handle_connection<R>(
     parser: std::sync::Arc<infra::interface::memcached_text_basic::Parser<R>>,
 ) -> Result<()>
 where
-    R: domain::repository::ID + Send + Sync + 'static,
+    R: domain::repository::Id + Send + Sync + 'static,
 {
     let address = stream.peer_addr()?;
     let mut reader = std::io::BufReader::new(stream.try_clone().unwrap());

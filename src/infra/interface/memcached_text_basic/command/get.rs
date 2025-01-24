@@ -12,7 +12,7 @@ pub struct Get {
 impl Get {
     pub fn new<R>(repository: std::sync::Arc<R>, keys: Vec<String>) -> Result<Self>
     where
-        R: domain::repository::ID + 'static,
+        R: domain::repository::Id + 'static,
     {
         if keys.is_empty() {
             return Err(Error::InvalidArguments(format!(
@@ -47,7 +47,7 @@ impl Command for Get {
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::repository::ID;
+    use crate::domain::repository::Id;
     use crate::domain::value_object;
 
     use super::*;
@@ -55,12 +55,12 @@ mod tests {
     #[derive(Clone)]
     struct MockRepository;
 
-    impl domain::repository::ID for MockRepository {
-        fn next(&self) -> Result<value_object::ID> {
+    impl domain::repository::Id for MockRepository {
+        fn next(&self) -> Result<value_object::Id> {
             let ts = value_object::Timestamp::new(domain::TIMESTAMP_MIN).unwrap();
             let seq = value_object::Sequence::new(domain::SEQUENCE_MIN).unwrap();
-            let worker_id = value_object::WorkerID::new(1).unwrap();
-            Ok(domain::value_object::ID::new(ts, seq, worker_id))
+            let worker_id = value_object::WorkerId::new(1).unwrap();
+            Ok(domain::value_object::Id::new(ts, seq, worker_id))
         }
     }
 

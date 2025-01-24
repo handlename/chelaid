@@ -1,3 +1,3 @@
 mod id;
 
-pub use id::ID;
+pub use id::Id;

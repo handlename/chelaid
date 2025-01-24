@@ -54,8 +54,8 @@ fn main() -> Result<()> {
 fn run_cli_issue(args: Args) -> Result<()> {
     log::debug!("start to issue a id...");
 
-    let worker_id = domain::value_object::WorkerID::new(args.worker_id)?;
-    let repository = infra::repository::ID::new(worker_id)?;
+    let worker_id = domain::value_object::WorkerId::new(args.worker_id)?;
+    let repository = infra::repository::Id::new(worker_id)?;
 
     let id = infra::interface::Cli::new(repository).issue()?;
     println!("{}", u64::from(id));
@@ -66,8 +66,8 @@ fn run_cli_issue(args: Args) -> Result<()> {
 fn run_cli_issue_some(args: Args) -> Result<()> {
     log::debug!("start to issue some ids...");
 
-    let worker_id = domain::value_object::WorkerID::new(args.worker_id)?;
-    let repository = infra::repository::ID::new(worker_id)?;
+    let worker_id = domain::value_object::WorkerId::new(args.worker_id)?;
+    let repository = infra::repository::Id::new(worker_id)?;
     let num = args.issues.unwrap();
 
     let ids = infra::interface::Cli::new(repository).issue_some(num)?;
@@ -81,8 +81,8 @@ fn run_cli_issue_some(args: Args) -> Result<()> {
 fn run_tcp_server(args: Args) -> Result<()> {
     log::debug!("start to run TCP server...");
 
-    let worker_id = domain::value_object::WorkerID::new(args.worker_id)?;
-    let repository = infra::repository::ID::new(worker_id)?;
+    let worker_id = domain::value_object::WorkerId::new(args.worker_id)?;
+    let repository = infra::repository::Id::new(worker_id)?;
 
     let mut server = infra::server::tcp::Tcp::new(args.host, args.port, repository)?;
 
