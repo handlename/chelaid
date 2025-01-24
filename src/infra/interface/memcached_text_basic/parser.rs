@@ -23,7 +23,7 @@ where
     pub fn parse(&self, line: &str) -> Result<Box<dyn command::Command>> {
         let mut parts = line.trim().split_whitespace();
         let raw_command = parts.next().ok_or(Error::EmptyCommand)?;
-        let command = CommandName::from_str(raw_command);
+        let command = CommandName::from(raw_command);
         let args = parts.map(|s| s.to_string()).collect();
 
         match command {

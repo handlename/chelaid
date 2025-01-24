@@ -6,8 +6,8 @@ pub enum CommandName {
     Unknown(String),
 }
 
-impl CommandName {
-    pub fn from_str(s: &str) -> Self {
+impl From<&str> for CommandName {
+    fn from(s: &str) -> Self {
         match s.to_uppercase().as_str() {
             "GET" => Self::Get,
             "STAT" => Self::Stat,
