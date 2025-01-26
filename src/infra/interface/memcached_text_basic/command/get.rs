@@ -56,6 +56,7 @@ mod tests {
     struct MockRepository;
 
     impl domain::repository::Id for MockRepository {
+        /// Returns a fixed ID for testing
         fn next(&self) -> Result<value_object::Id> {
             let ts = value_object::Timestamp::new(domain::TIMESTAMP_MIN).unwrap();
             let seq = value_object::Sequence::new(domain::SEQUENCE_MIN).unwrap();

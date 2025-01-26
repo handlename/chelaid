@@ -64,12 +64,14 @@ mod tests {
     fn test_new() {
         let ts = Timestamp::new(100000 + TIMESTAMP_OFFSET).unwrap();
         let seq = Sequence::new(1234).unwrap();
-        let worker_id = WorkerId::new(567).unwrap();
+        let worker_id = WorkerId::random();
 
         let id = Id::new(ts.clone(), seq.clone(), worker_id.clone());
         assert_eq!(
             u64::from(id.clone()),
-            100000 << (WORKER_ID_BITS + SEQUENCE_BITS) | 567 << SEQUENCE_BITS | 1234
+            100000 << (WORKER_ID_BITS + SEQUENCE_BITS)
+                | u64::from(worker_id.clone()) << SEQUENCE_BITS
+                | 1234
         );
         println!("{:?}", id);
 

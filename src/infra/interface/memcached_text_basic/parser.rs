@@ -46,7 +46,7 @@ mod tests {
         fn next(&self) -> Result<domain::value_object::Id> {
             let ts = domain::value_object::Timestamp::new(domain::TIMESTAMP_OFFSET).unwrap();
             let seq = domain::value_object::Sequence::new(1).unwrap();
-            let worker_id = domain::value_object::WorkerId::new(1).unwrap();
+            let worker_id = domain::value_object::WorkerId::random();
             Ok(domain::value_object::Id::new(ts, seq, worker_id))
         }
     }

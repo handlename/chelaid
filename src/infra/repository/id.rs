@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn test_next() {
-        let worker_id = value_object::WorkerId::new(123).unwrap();
+        let worker_id = value_object::WorkerId::random();
         let repo = super::Id::new(worker_id.clone()).unwrap();
         let id = repo.next().unwrap();
         println!("generated id = {:?}", id);
@@ -103,7 +103,7 @@ mod tests {
 
     #[test]
     fn test_next_some() {
-        let worker_id = value_object::WorkerId::new(123).unwrap();
+        let worker_id = value_object::WorkerId::random();
         let repo = super::Id::new(worker_id.clone()).unwrap();
 
         let num = 10000;

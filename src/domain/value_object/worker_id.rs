@@ -14,6 +14,14 @@ impl WorkerId {
 
         Ok(WorkerId(v))
     }
+
+    #[cfg(test)]
+    pub fn random() -> WorkerId {
+        use rand::Rng;
+
+        let max: u32 = (1 << WORKER_ID_BITS) - 1;
+        WorkerId(rand::thread_rng().gen_range(0..max))
+    }
 }
 
 impl std::convert::From<WorkerId> for u32 {
