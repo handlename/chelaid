@@ -1,7 +1,9 @@
 use color_eyre::eyre::{Report, Result};
 
+use super::super::command_name::CommandName;
 use super::super::error::Error;
-use super::{super::command_name::CommandName, Command};
+use super::super::response;
+use super::{Command, Response};
 use crate::{app, domain};
 
 pub struct Get {
@@ -30,11 +32,11 @@ impl Get {
 }
 
 impl Command for Get {
-    fn execute(&self) -> Result<Vec<String>> {
+    fn execute(&self) -> Result<Vec<Box<dyn Response>>> {
         let mut results = Vec::with_capacity(self.keys.len());
         for key in &self.keys {
             let id = self.usecase.run()?;
-            results.push(format!("VALUE {} 0 {}", key, u64::from(id)))
+            results.push(Box::new(response::Value::new(key, id)) as Box<dyn Response>);
         }
 
         Ok(results)
@@ -73,13 +75,13 @@ mod tests {
         let tests = vec![
             (
                 vec!["key1"],
-                vec![format!("VALUE key1 0 {}", u64::from(id.clone()))],
+                vec![format!("VALUE key1 0 {}\r\n", u64::from(id.clone()))],
             ),
             (
                 vec!["key1", "key2"],
                 vec![
-                    format!("VALUE key1 0 {}", u64::from(id.clone())),
-                    format!("VALUE key2 0 {}", u64::from(id.clone())),
+                    format!("VALUE key1 0 {}\r\n", u64::from(id.clone())),
+                    format!("VALUE key2 0 {}\r\n", u64::from(id.clone())),
                 ],
             ),
         ];
@@ -88,7 +90,8 @@ mod tests {
             let keys = keys.iter().map(|s| s.to_string()).collect();
             let cmd = Get::new(repo.clone(), keys).unwrap();
             let got = cmd.execute().unwrap();
-            assert_eq!(got, expected);
+            let res = got.iter().map(|v| v.to_string()).collect::<Vec<String>>();
+            assert_eq!(res, expected);
         }
     }
 }

@@ -1,6 +1,7 @@
 use color_eyre::eyre::Result;
 
 use super::Command;
+use super::Response;
 
 pub struct End {}
 
@@ -11,7 +12,7 @@ impl End {
 }
 
 impl Command for End {
-    fn execute(&self) -> Result<Vec<String>> {
+    fn execute(&self) -> Result<Vec<Box<dyn Response>>> {
         // do nothing
         Ok(Vec::new())
     }

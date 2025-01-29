@@ -16,10 +16,8 @@ impl Value {
     }
 }
 
-impl Response for Value {}
-
-impl From<Value> for String {
-    fn from(value: Value) -> Self {
-        format!("VALUE {} 0 {}", value.key, u64::from(value.id))
+impl Response for Value {
+    fn to_string(&self) -> String {
+        format!("VALUE {} 0 {}\r\n", self.key, u64::from(self.id.clone()))
     }
 }
