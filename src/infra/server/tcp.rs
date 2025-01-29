@@ -152,7 +152,6 @@ where
                     log::debug!("response for {}: {}", address, r.to_string());
 
                     stream.write_all(r.to_string().as_bytes())?;
-                    stream.write_all(b"\r\n")?;
                     stream.flush()?;
                 }
             }
