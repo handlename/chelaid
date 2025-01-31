@@ -69,14 +69,10 @@ Connection closed by foreign host.
 
 ## Development
 
+Setup development environment for Rust, then:
+
 ```console
 $ cargo test
-```
-
-Then,
-
-```console
-$ cargo run
 ```
 
 ### Features
@@ -86,7 +82,7 @@ $ cargo run
         - [x] `get`
         - [ ] `stat`
         - [ ] `version`
-        - [ ] `quit`
+        - [x] `quit`
     - [ ] [Memcached Meta Text Protocol](https://docs.memcached.org/protocols/meta/)
     - [ ] [Memcached Binary Protocol](https://docs.memcached.org/protocols/binary/)
         - ⚠️ [Deprecated](https://docs.memcached.org/protocols/#why-is-the-binary-protocol-deprecated) in Memcached
