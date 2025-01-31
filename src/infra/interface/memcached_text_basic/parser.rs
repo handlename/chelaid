@@ -29,7 +29,7 @@ where
         match command {
             CommandName::Get => Ok(Box::new(command::Get::new(self.repository.clone(), args)?)),
             CommandName::Stat => todo!(),
-            CommandName::End => Ok(Box::new(command::End::new())),
+            CommandName::Quit => Ok(Box::new(command::Quit::new())),
             CommandName::Unknown(s) => Err(Error::UnknownCommand(s)).map_err(Report::from),
         }
     }

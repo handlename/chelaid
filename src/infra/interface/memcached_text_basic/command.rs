@@ -1,11 +1,11 @@
-mod end;
+mod quit;
 mod get;
 
 use color_eyre::eyre::Result;
 
 use super::response::Response;
 
-pub use end::End;
+pub use quit::Quit;
 pub use get::Get;
 
 pub trait Command: std::any::Any {

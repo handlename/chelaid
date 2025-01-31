@@ -141,9 +141,9 @@ where
             Ok(command) => {
                 if let Some(_) = command
                     .as_any()
-                    .downcast_ref::<infra::interface::memcached_text_basic::command::End>(
+                    .downcast_ref::<infra::interface::memcached_text_basic::command::Quit>(
                 ) {
-                    log::debug!("END command from {}", address);
+                    log::debug!("QUIT command from {}", address);
                     break;
                 }
 
