@@ -38,6 +38,7 @@ impl Command for Get {
             let id = self.usecase.run()?;
             results.push(Box::new(response::Value::new(key, id)) as Box<dyn Response>);
         }
+        results.push(Box::new(response::End::new()) as Box<dyn Response>);
 
         Ok(results)
     }
