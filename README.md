@@ -69,10 +69,16 @@ Connection closed by foreign host.
 
 ## Development
 
-Setup development environment for Rust, then:
+This project using [mise](https://mise.jdx.dev/).
 
 ```console
-$ cargo test
+$ mise tasks run setup
+```
+
+Then,
+
+```console
+$ mise tasks run test
 ```
 
 ### Features
