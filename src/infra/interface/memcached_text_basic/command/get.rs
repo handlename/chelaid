@@ -76,13 +76,17 @@ mod tests {
         let tests = vec![
             (
                 vec!["key1"],
-                vec![format!("VALUE key1 0 {}\r\n", u64::from(id.clone()))],
+                vec![
+                    format!("VALUE key1 0 {}\r\n", u64::from(id.clone())),
+                    "END\r\n".to_string(),
+                ],
             ),
             (
                 vec!["key1", "key2"],
                 vec![
                     format!("VALUE key1 0 {}\r\n", u64::from(id.clone())),
                     format!("VALUE key2 0 {}\r\n", u64::from(id.clone())),
+                    "END\r\n".to_string(),
                 ],
             ),
         ];
