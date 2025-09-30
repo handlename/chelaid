@@ -6,7 +6,7 @@
 
 `chelaid` = 🦀`chelate` + 🪪`id`
 
-`chelaid` is reinmlementation of [katsubushi](https://github.com/kayac/go-katsubushi) in Rust.
+`chelaid` is reimplementation of [katsubushi](https://github.com/kayac/go-katsubushi) in Rust.
 
 ## Usage
 
@@ -21,7 +21,7 @@ Options:
       --host <HOST>            Host name for TCP server [default: 127.0.0.1]
       --port <PORT>            Port number for TCP server [default: 11212]
   -h, --help                   Print help
-  -V, --version                Print versio
+  -V, --version                Print version
 ```
 
 ### Server
