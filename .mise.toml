@@ -1,0 +1,22 @@
+[tools]
+rust = "1.83.0"
+
+[tasks.setup]
+description = 'Setup rust environment'
+run = [
+    'mise install',
+    'rustup default stable',
+    'rustup component add cargo clippy rust-analyzer rustfmt',
+]
+
+[tasks.test]
+description = 'Run tests'
+run = [
+    'cargo test',
+]
+
+[tasks.build]
+description = 'Build the project'
+run = [
+    'cargo build',
+]
