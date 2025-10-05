@@ -4,7 +4,7 @@ use color_eyre::eyre::Result;
 use super::super::constant::TIMESTAMP_OFFSET;
 
 /// Epoch time in millseconds.
-#[derive(Debug, PartialOrd, Ord)]
+#[derive(Debug, PartialOrd, Ord, Clone, PartialEq, Eq)]
 pub struct Timestamp(u64);
 
 impl Timestamp {
@@ -33,19 +33,5 @@ impl Timestamp {
 impl std::convert::From<Timestamp> for u64 {
     fn from(ts: Timestamp) -> u64 {
         ts.0
-    }
-}
-
-impl PartialEq for Timestamp {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-
-impl Eq for Timestamp {}
-
-impl Clone for Timestamp {
-    fn clone(&self) -> Self {
-        Self(self.0)
     }
 }

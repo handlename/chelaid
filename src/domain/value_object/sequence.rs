@@ -2,7 +2,7 @@ use super::super::constant::*;
 use super::super::error::Error;
 use color_eyre::eyre::Result;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Sequence(u32);
 
 impl Sequence {
@@ -28,18 +28,6 @@ impl std::convert::From<Sequence> for u32 {
 impl std::convert::From<Sequence> for u64 {
     fn from(seq: Sequence) -> u64 {
         seq.0 as u64
-    }
-}
-
-impl PartialEq for Sequence {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-
-impl Clone for Sequence {
-    fn clone(&self) -> Self {
-        Self(self.0)
     }
 }
 

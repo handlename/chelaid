@@ -3,7 +3,7 @@ use super::super::error::Error;
 
 use color_eyre::eyre::Result;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct WorkerId(u32);
 
 impl WorkerId {
@@ -33,18 +33,6 @@ impl std::convert::From<WorkerId> for u32 {
 impl std::convert::From<WorkerId> for u64 {
     fn from(worker_id: WorkerId) -> u64 {
         worker_id.0 as u64
-    }
-}
-
-impl PartialEq for WorkerId {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-
-impl Clone for WorkerId {
-    fn clone(&self) -> Self {
-        Self(self.0)
     }
 }
 
